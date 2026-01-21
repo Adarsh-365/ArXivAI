@@ -1,0 +1,1 @@
+odel weights and inference code for our infinite-length film generative models. To the best of our knowledge, it represents the first open-source video generative model employing AutoRegressive Diffusion-Forcing architecture that achieves the SOTA performance among publicly available models.
