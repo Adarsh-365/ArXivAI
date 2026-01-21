@@ -4,9 +4,20 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "langgraph",
+    "langchain-core",
+    "python-dotenv",
+    "faiss-cpu",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "arxiv",
+    "arxiv2text",
+    "rank_bm25",
+]
 
 [tool.uv.workspace]
-members = [
-    "v2/SkyReels-V2",
-]
+members = []
