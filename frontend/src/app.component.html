@@ -1,0 +1,188 @@
+<!-- EDITED: Add Marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+
+<!-- EDITED: Changed min-h-screen to h-screen and added overflow-hidden -->
+<div class="h-screen flex bg-[#0B0F19] text-white selection:bg-indigo-500/30 overflow-hidden relative">
+
+  <!-- Left Block: Search Results -->
+  <div class="flex flex-col overflow-y-auto transition-all duration-300" 
+       [style.width]="showChatbot() ? 'calc(100% - ' + chatWidth() + 'px)' : '100%'">
+    
+    <!-- Navigation / Header -->
+    <header class="w-full p-6 flex justify-between items-center z-10">
+      <div class="flex items-center gap-2 cursor-pointer" (click)="hasSearched.set(false); searchQuery.set(''); results.set([])">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <span class="font-bold text-white text-lg">A</span>
+        </div>
+        <span class="font-semibold text-lg tracking-tight text-gray-200">ArXiv<span class="text-indigo-400">AI</span></span>
+      </div>
+      <a href="https://github.com\adarsh-365" target="_blank" class="text-sm text-gray-400 hover:text-white transition-colors">GitHub</a>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative transition-all duration-500"
+          [class.justify-center]="!hasSearched()"
+          [class.items-center]="!hasSearched()"
+          [class.justify-start]="hasSearched()"
+          [class.pt-8]="hasSearched()">
+
+      @if (!hasSearched()) {
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute top-1/3 left-2/3 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+      }
+
+      <!-- Hero Section -->
+      <div class="w-full max-w-3xl flex flex-col items-center text-center z-10 transition-all duration-500"
+           [class.mb-12]="!hasSearched()"
+           [class.mb-8]="hasSearched()">
+        
+        @if (!hasSearched()) {
+          <h1 class="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 mb-6 animate-fade-in tracking-tight">
+            Discover science with <br /> AI-powered search
+          </h1>
+          <p class="text-lg text-gray-400 mb-10 max-w-xl animate-slide-up animation-delay-100">
+            Instantly find, summarize, and access ArXiv papers using the power of Gemini 2.0 Flash.
+          </p>
+        }
+
+        <!-- Search Bar -->
+        <div class="w-full relative group">
+          <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur"></div>
+          <div class="relative flex items-center bg-[#181c26] rounded-xl overflow-hidden shadow-2xl">
+            <input type="text" [(ngModel)]="searchQuery" (keydown)="onKeydown($event)"
+              placeholder="Search for papers (e.g., 'Transformers in Vision')..." 
+              class="w-full py-4 pl-6 pr-32 bg-transparent text-gray-100 placeholder-gray-500 focus:outline-none text-lg font-medium" />
+            
+            <div class="absolute right-2 flex items-center gap-2">
+               @if (searchQuery()) {
+                  <button (click)="searchQuery.set('')" class="p-2 text-gray-500 hover:text-white transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                  </button>
+               }
+              <button (click)="onSearch()" [disabled]="isLoading()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 border border-gray-700">
+                @if (isLoading()) { Thinking... } @else { Search }
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        @if (!hasSearched()) {
+          <div class="mt-8 flex flex-wrap justify-center gap-3 animate-slide-up animation-delay-200">
+            @for (topic of suggestions; track topic) {
+              <button (click)="useSuggestion(topic)" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 rounded-full text-sm text-gray-400 hover:text-indigo-300 transition-all duration-300">
+                {{ topic }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Results Section -->
+      @if (hasSearched()) {
+        <div class="w-full pb-20 animate-fade-in">
+          <div class="flex items-center justify-between mb-8 px-2 gap-4">
+              <div>
+                <h2 class="text-xl font-semibold text-gray-200">Results for <span class="text-indigo-400">"{{ searchQuery() }}"</span></h2>
+                <span class="text-sm text-gray-500">{{ results().length }} papers found</span>
+              </div>
+              <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-400">Year</label>
+                    <input type="number" [ngModel]="yearFrom()" (ngModelChange)="yearFrom.set($event ? +$event : null)" placeholder="from" class="w-20 p-1 rounded bg-gray-800 text-sm" />
+                    <input type="number" [ngModel]="yearTo()" (ngModelChange)="yearTo.set($event ? +$event : null)" placeholder="to" class="w-20 p-1 rounded bg-gray-800 text-sm" />
+                  </div>
+                <button (click)="applyFilters()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded text-sm">Apply</button>
+              </div>
+          </div>
+
+          @if (isLoading()) {
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               @for (i of [1,2,3,4,5,6]; track i) { <div class="h-96 rounded-2xl bg-gray-900 border border-gray-800 animate-pulse"></div> }
+             </div>
+          } @else {
+             @for (section of getGroupedSectionsSorted(); track section.year) {
+               <div class="mb-6 w-full">
+                 <div class="text-sm text-gray-400 font-semibold mb-2">{{ section.year }}</div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                   @for (paper of section.papers; track paper.arxivId) {
+                     <app-paper-card [paper]="paper" (click)="onPaperClick(paper)"></app-paper-card>
+                   }
+                 </div>
+                 <div class="mt-4 border-t border-gray-800"></div>
+               </div>
+             }
+          }
+        </div>
+      }
+    </main>
+  </div>
+
+  <!-- Right Block: Chatbot Sidebar (Converted to Fixed, Draggable, Resizable) -->
+  @if (showChatbot()) {
+    <div 
+      class="fixed right-0 top-0 h-screen bg-gray-800 border-l border-gray-700 flex flex-col z-50 shadow-2xl"
+      [style.width.px]="chatWidth()"
+      [style.transform]="'translate(' + chatPosition().x + 'px, ' + chatPosition().y + 'px)'"
+    >
+      <!-- RESIZE HANDLE: Grabbing this pulls the window wider to the left -->
+      <div 
+        (mousedown)="startResizing($event)"
+        class="absolute left-0 top-0 w-1.5 h-full cursor-ew-resize hover:bg-indigo-500/50 transition-colors"
+      ></div>
+
+      <!-- Chat Header (DRAG HANDLE) -->
+      <div 
+        (mousedown)="startDragging($event)"
+        class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center cursor-grab active:cursor-grabbing"
+      >
+        <h2 class="text-lg font-semibold text-gray-200 pointer-events-none">Chatbot</h2>
+        <button (click)="closeChatbot()" class="text-gray-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        @for(message of chatHistory(); track $index) {
+          <div class="flex" [class.justify-end]="message.sender === 'user'">
+            <div class="p-3 rounded-lg text-sm text-gray-200 max-w-[85%] prose prose-invert"
+                 [class.bg-indigo-600]="message.sender === 'user'"
+                 [class.bg-gray-700]="message.sender === 'bot'">
+              @if (message.sender === 'bot') {
+                <div [innerHTML]="renderMarkdown(message.text)"></div>
+              } @else {
+                <p>{{ message.text }}</p>
+              }
+            </div>
+          </div>
+        }
+        @if (isBotThinking()) {
+          <div class="flex">
+             <div class="p-3 rounded-lg text-sm text-gray-400 bg-gray-700">{{ thinkingStage() }}</div>
+          </div>
+        }
+      </div>
+
+      <!-- Chat Input -->
+      <div class="p-4 bg-gray-900 border-t border-gray-700">
+        <div class="relative flex flex-col p-2 bg-gray-800 rounded-xl shadow-lg">
+          @if (selectedPaper()) {
+            <div class="text-xs text-gray-400 mb-2 line-clamp-1">Context: {{ selectedPaper()!.title }}</div>
+          }
+          <textarea
+            [(ngModel)]="chatMessage"
+            (keydown)="onKeydown($event)"
+            [placeholder]="selectedPaper() ? 'Ask a question...' : 'Select a paper...'"
+            class="w-full p-2 bg-transparent text-gray-100 placeholder-gray-500 focus:outline-none text-sm resize-none h-20"
+          ></textarea>
+          <div class="flex justify-between items-center mt-3">
+            <button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-md text-xs font-semibold max-w-[150px] truncate" [disabled]="!selectedPaper()">Tools</button>
+            <button (click)="sendMessage()" [disabled]="isBotThinking() || !chatMessage().trim()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+              Run <span class="text-xs text-indigo-200/70">Ctrl+Enter</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

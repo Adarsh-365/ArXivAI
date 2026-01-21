@@ -1,0 +1,5 @@
+{
+  "name": "ArXiv AI Explorer",
+  "description": "A semantic search engine for ArXiv papers powered by Gemini AI. Features a sleek dark UI and intelligent result parsing.",
+  "requestFramePermissions": []
+}

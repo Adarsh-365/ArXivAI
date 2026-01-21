@@ -1,0 +1,96 @@
+<div class="group relative flex flex-col h-96 w-full rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1 block cursor-pointer select-none">
+  
+  <!-- Top Half: Simulated PDF Preview -->
+  <div class="relative h-1/2 w-full bg-gray-800 overflow-hidden">
+    
+    <!-- CSS-based PDF Page Simulation -->
+    <!-- This creates a visual that looks like the first page of a paper using the actual content -->
+    <div class="absolute inset-0 flex justify-center pt-4 px-4 transition-transform duration-700 group-hover:scale-105 origin-top">
+      <div class="w-full h-[250%] bg-white shadow-xl flex flex-col p-6 items-center opacity-90">
+        <!-- Paper Header Simulation -->
+        <div class="w-full flex justify-between items-start mb-4 border-b border-gray-200 pb-2">
+            <div class="text-[0.35rem] uppercase tracking-widest text-gray-500 font-sans">arXiv:{{ paper().arxivId }} [{{ paper().category }}]</div>
+            <div class="text-[0.35rem] text-gray-400 font-sans">{{ getNowDate() }}</div>
+        </div>
+        
+        <!-- Title (Serif) -->
+        <div class="text-black font-serif font-bold text-center leading-tight mb-3 text-[0.6rem] w-5/6">
+          {{ paper().title }}
+        </div>
+        
+        <!-- Authors -->
+        <div class="flex flex-wrap justify-center gap-1 mb-4 w-5/6 px-4">
+           @for(author of paper().authors.slice(0, 6); track author) {
+              <span class="text-[0.3rem] text-gray-600 font-serif italic">{{ author }}@if(!$last){,}</span>
+           }
+        </div>
+
+        <!-- Abstract Columns -->
+        <div class="w-full flex gap-3 px-2">
+           <!-- Column 1 -->
+           <div class="flex-1 flex flex-col gap-1">
+             <div class="text-[0.3rem] font-bold text-black font-serif mb-0.5">Abstract</div>
+             <p class="text-[0.25rem] leading-relaxed text-justify text-gray-600 font-serif line-clamp-[12]">
+                {{ paper().summary }}{{ paper().summary }}{{ paper().summary }} <!-- Repeat to fill space visually -->
+             </p>
+           </div>
+           <!-- Column 2 (Visual filler) -->
+           <div class="flex-1 flex flex-col gap-1.5 pt-4">
+                <div class="h-0.5 w-full bg-gray-200 rounded"></div>
+                <div class="h-0.5 w-11/12 bg-gray-200 rounded"></div>
+                <div class="h-0.5 w-full bg-gray-200 rounded"></div>
+                <div class="h-0.5 w-full bg-gray-200 rounded"></div>
+                <div class="w-full aspect-video bg-gray-100 border border-gray-200 mt-1 flex items-center justify-center">
+                    <span class="text-[0.2rem] text-gray-400">Fig. 1</span>
+                </div>
+                <div class="h-0.5 w-full bg-gray-200 rounded mt-1"></div>
+                <div class="h-0.5 w-4/5 bg-gray-200 rounded"></div>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dark Gradient Overlay for Title Readability -->
+    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent pointer-events-none"></div>
+
+    <!-- Title Overlay (Foreground) -->
+    <div class="absolute inset-0 flex items-end p-6 pointer-events-none">
+      <h3 class="text-lg font-bold text-white leading-tight drop-shadow-md line-clamp-2 font-sans group-hover:text-indigo-300 transition-colors">
+        {{ paper().title }}
+      </h3>
+    </div>
+  </div>
+
+  <!-- Bottom Half: Details -->
+  <div class="flex flex-col h-1/2 p-6 bg-gray-900 relative border-t border-gray-800">
+    
+    <!-- Floating Badge -->
+    <div class="absolute top-0 right-6 -mt-3 shadow-lg">
+         <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-indigo-600 rounded">
+             {{ paper().category }}
+         </span>
+    </div>
+
+    <div class="space-y-4 flex-1 overflow-hidden">
+      <!-- Authors list -->
+      <div class="flex flex-wrap gap-x-2 gap-y-1">
+        @for (author of paper().authors; track author) {
+          <span class="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">{{ author }}</span>
+        }
+      </div>
+      
+      <!-- Summary -->
+      <p class="text-sm text-gray-500 group-hover:text-gray-400 line-clamp-3 leading-relaxed transition-colors">
+        {{ paper().summary }}
+      </p>
+    </div>
+    
+    <!-- Footer CTA -->
+    <div class="mt-auto pt-4 flex items-center justify-between text-xs text-indigo-400/80 group-hover:text-indigo-400 transition-colors font-medium cursor-pointer" (click)="openPdf($event)">
+        <span>View PDF</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+    </div>
+  </div>
+</div>
